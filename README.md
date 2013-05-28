@@ -32,6 +32,8 @@ More examples you can find in the tests directory.
 ### Configuring routes
 
 ```javascript
+'use strict';
+
 module.exports = {
 
 	// simple route
