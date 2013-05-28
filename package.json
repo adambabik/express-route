@@ -2,16 +2,26 @@
   "name": "express-route",
   "version": "0.0.1",
   "description": "express-route is a library that let you organize the routes for express applications.",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha tests"
-  },
-  "repository": "",
   "keywords": [
     "route",
     "router",
     "express"
   ],
+  "bugs": {
+    "url": "",
+    "email": "a.babik@designfortress.com"
+  },
+  "engines": {
+    "node": "~0.8.0"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dreame4/express-route.git"
+  },
   "devDependencies": {
     "express": "~3.2.0",
     "mocha": "~1.10.0"
