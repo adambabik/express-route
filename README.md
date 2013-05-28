@@ -2,7 +2,9 @@
 
 express-route is a library that let you organize the routes for the express applications.
 
-### Usage
+## Usage
+
+### Setting up routes
 
 ```javascript
 var route = require('express-route');
@@ -26,3 +28,36 @@ route(app, './routes', {
 ```
 
 More examples you can find in the tests directory.
+
+### Configuring routes
+
+```javascript
+module.exports = {
+
+	// simple route
+
+	'/': function (req, res) {
+		res.end('index');
+	},
+
+	// route with restricted setting on
+
+	'/user': {
+		fn: function (req, res) {
+			res.end('user');
+		},
+		restricted: true
+	},
+
+	// route that accepts several methods
+
+	'/user/posts/:id': {
+		fn: function (req, res) {
+			res.end('method ' + req.method + ' post #' + req.params.id);
+		},
+		restricted: true,
+		methods: ['get', 'post', 'delete']
+	}
+
+};
+```
