@@ -1,0 +1,21 @@
+{
+  "name": "express-route",
+  "version": "0.0.1",
+  "description": "express-route is a library that let you organize the routes for express applications.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests"
+  },
+  "repository": "",
+  "keywords": [
+    "route",
+    "router",
+    "express"
+  ],
+  "devDependencies": {
+    "express": "~3.2.0",
+    "mocha": "~1.10.0"
+  },
+  "author": "Adam Babik",
+  "license": "MIT"
+}
