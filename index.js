@@ -115,35 +115,52 @@ proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
 };
 
 /**
- * Apply read routes to express application.
+ * Apply obtained routes to the express application.
  * @param  {Object} routes
  */
 proto.applyRoutes = function applyRoutes(routes) {
   var _self = this,
-      action, actionName, methods;
+      action, actionName, methods, route;
 
   for (actionName in routes) {
     if (!routes.hasOwnProperty(actionName)) continue;
 
     action = routes[actionName];
 
-    if (typeof action === 'function') {
-      _self.app.get(actionName, action);
-    } else if (typeof action.fn === 'function') {
-      methods = action.methods && Array.isArray(action.methods) ?
-                action.methods :
-                ['get'];
-
-      methods.forEach(function (method) {
-        if (action.restricted) {
-          _self.app[method](actionName, _self.settings.ensureRestriction, action.fn);
-        } else if (action) {
-          _self.app[method](actionName, action.fn);
-        }
+    if (Array.isArray(action)) {
+      action.forEach(function (route) {
+        _self.applyRoute(actionName, route);
       });
     } else {
-      throw new Error('Wrong definition of the route. It must be a function or a object with `fn` property.');
+      _self.applyRoute(actionName, action);
     }
+  }
+};
+
+/**
+ * Apply single action to the express application.
+ * @param  {String}          actionName route path
+ * @param  {Function|Object} action     route definition
+ */
+proto.applyRoute = function applyRoute(actionName, action) {
+  var _self = this, methods;
+
+  if (typeof action === 'function') {
+    _self.app.get(actionName, action);
+  } else if (typeof action.fn === 'function') {
+    methods = action.methods && Array.isArray(action.methods) ?
+              action.methods :
+              ['get'];
+
+    methods.forEach(function (method) {
+      if (action.restricted) {
+        _self.app[method](actionName, _self.settings.ensureRestriction, action.fn);
+      } else if (action) {
+        _self.app[method](actionName, action.fn);
+      }
+    });
+  } else {
+    throw new Error('Wrong definition of the route. It must be a function or a object with `fn` property.');
   }
 };
 
