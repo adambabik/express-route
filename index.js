@@ -1,7 +1,7 @@
 'use strict';
 
 var fs   = require('fs'),
-		path = require('path');
+    path = require('path');
 
 /**
  * Function which always return true.
@@ -16,7 +16,7 @@ function returnTrue() { return true; }
  * @return {Boolean}    return whether path has the ext extension
  */
 function assertExt(p, ext) {
-	return path.extname(p) === ext;
+  return path.extname(p) === ext;
 }
 
 /**
@@ -26,31 +26,31 @@ function assertExt(p, ext) {
  * @param {Object} settings
  */
 function Router(app, dirPath, settings) {
-	if (!app) {
-		throw new Error('The first parameter must be an express application.');
-	}
+  if (!app) {
+    throw new Error('The first parameter must be an express application.');
+  }
 
-	settings || (settings = {});
+  settings || (settings = {});
 
-	if (typeof settings.ensureRestriction !== 'function') {
-		settings.ensureRestriction = returnTrue;
-	}
+  if (typeof settings.ensureRestriction !== 'function') {
+    settings.ensureRestriction = returnTrue;
+  }
 
-	if (!Array.isArray(settings.ext)) {
-		if (settings.ext) {
-			settings.ext = [settings.ext];
-		} else {
-			settings.ext = ['js'];
-		}
-	}
+  if (!Array.isArray(settings.ext)) {
+    if (settings.ext) {
+      settings.ext = [settings.ext];
+    } else {
+      settings.ext = ['.js'];
+    }
+  }
 
-	if (typeof settings.sync !== 'boolean') {
-		settings.sync = true;
-	}
+  if (typeof settings.sync !== 'boolean') {
+    settings.sync = true;
+  }
 
-	this.app = app;
-	this.dirPath = dirPath;
-	this.settings = settings;
+  this.app = app;
+  this.dirPath = dirPath;
+  this.settings = settings;
 }
 
 var proto = Router.prototype;
@@ -61,8 +61,8 @@ var proto = Router.prototype;
  * @param  {Function} fn
  */
 function statSync(path, fn) {
-	var stats = fs.statSync(path);
-	fn(null, stats);
+  var stats = fs.statSync(path);
+  fn(null, stats);
 }
 
 /**
@@ -71,8 +71,8 @@ function statSync(path, fn) {
  * @param  {Function} fn
  */
 function readdirSync(path, fn) {
-	var files = fs.readdirSync;
-	fn(null, files);
+  var files = fs.readdirSync(path);
+  fn(null, files);
 }
 
 /**
@@ -81,39 +81,37 @@ function readdirSync(path, fn) {
  * @param  {String} dirPath
  */
 proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
-	var _self = this,
-			sync = _self.settings.sync;
+  var _self = this,
+      sync = _self.settings.sync;
 
-	var stat = sync ? statSync : fs.stat,
-			readdir = sync ? readdirSync : fs.readdir;
+  var stat = sync ? statSync : fs.stat,
+      readdir = sync ? readdirSync : fs.readdir;
 
-	stat(dirPath, function (err, stats) {
-		if (err) {
-			throw err;
-		}
+  stat(dirPath, function (err, stats) {
+    if (err) {
+      throw err;
+    }
 
-		if (stats.isDirectory()) {
+    if (stats.isDirectory()) {
+      readdir(dirPath, function (err, files) {
+        if (err) throw err;
 
-			readdir(dirPath, function (err, files) {
-				if (err) throw err;
+        files.forEach(function (file) {
+          stat(path.join(dirPath, file), function (err, stats) {
+            if (err) throw err;
 
-				files.forEach(function (file) {
-					stat(path.join(dirPath, file), function (err, stats) {
-						if (err) throw err;
-
-						if (stats.isDirectory()) {
-							_self.readdirWithRoutes(path.resolve(dirPath, file));
-						} else if (_self.settings.ext.some(function (ext) { return assertExt(file, ext); })) {
-							_self.applyRoutes(require(path.resolve('./', dirPath, file)));
-						}
-					});
-				});
-			});
-
-		} else {
-			_self.applyRoutes(require(path.resolve('./', dirPath)));
-		}
-	});
+            if (stats.isDirectory()) {
+              _self.readdirWithRoutes(path.resolve(dirPath, file));
+            } else if (_self.settings.ext.some(function (ext) { return assertExt(file, ext); })) {
+              _self.applyRoutes(require(path.resolve('./', dirPath, file)));
+            }
+          });
+        });
+      });
+    } else {
+      _self.applyRoutes(require(path.resolve('./', dirPath)));
+    }
+  });
 };
 
 /**
@@ -121,36 +119,32 @@ proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
  * @param  {Object} routes
  */
 proto.applyRoutes = function applyRoutes(routes) {
-	var _self = this,
-			action, actionName, methods;
+  var _self = this,
+      action, actionName, methods;
 
-	for (actionName in routes) {
-		if (!routes.hasOwnProperty(actionName)) continue;
+  for (actionName in routes) {
+    if (!routes.hasOwnProperty(actionName)) continue;
 
-		action = routes[actionName];
+    action = routes[actionName];
 
-		if (typeof action === 'function') {
+    if (typeof action === 'function') {
+      _self.app.get(actionName, action);
+    } else if (typeof action.fn === 'function') {
+      methods = action.methods && Array.isArray(action.methods) ?
+                action.methods :
+                ['get'];
 
-			_self.app.get(actionName, action);
-
-		} else if (typeof action.fn === 'function') {
-
-			if (action.methods && Array.isArray(action.methods)) {
-				methods = action.methods;
-			} else {
-				methods = ['get'];
-			}
-
-			methods.forEach(function (method) {
-				if (action.restricted) {
-					_self.app[method](actionName, _self.settings.ensureRestriction, action.fn);
-				} else if (action) {
-					_self.app[method](actionName, action.fn);
-				}
-			});
-
-		}
-	}
+      methods.forEach(function (method) {
+        if (action.restricted) {
+          _self.app[method](actionName, _self.settings.ensureRestriction, action.fn);
+        } else if (action) {
+          _self.app[method](actionName, action.fn);
+        }
+      });
+    } else {
+      throw new Error('Wrong definition of the route. It must be a function or a object with `fn` property.');
+    }
+  }
 };
 
 /**
@@ -161,9 +155,8 @@ proto.applyRoutes = function applyRoutes(routes) {
  * @return {Object<Router>}        Router instance
  */
 function route(app, dir, settings) {
-	return new Router(app, dir, settings).readdirWithRoutes(dir);
+  return new Router(app, dir, settings).readdirWithRoutes(dir);
 }
-
 route.Router = Router;
 
 module.exports = route;
