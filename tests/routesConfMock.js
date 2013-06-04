@@ -1,34 +1,50 @@
 'use strict';
 
 /*
-	Example of a file with routes configuration.
+  Example of a file with routes configuration.
  */
 
 module.exports = {
 
-	// simple route
+  // simple route
 
-	'/': function (req, res) {
-		res.end('index');
-	},
+  '/': function (req, res) {
+    res.end('index');
+  },
 
-	// route with restricted option
+  // route with restricted option
 
-	'/user': {
-		fn: function (req, res) {
-			res.end('user');
-		},
-		restricted: true
-	},
+  '/user': {
+    fn: function (req, res) {
+      res.end('user');
+    },
+    restricted: true
+  },
 
-	// route that accepts several methods
+  // route that accepts several methods
 
-	'/user/posts/:id': {
-		fn: function (req, res) {
-			res.end('method ' + req.method + ' post #' + req.params.id);
-		},
-		restricted: true,
-		methods: ['get', 'post', 'delete']
-	}
+  '/user/posts/:id': {
+    fn: function (req, res) {
+      res.end('method ' + req.method + ' post #' + req.params.id);
+    },
+    restricted: true,
+    methods: ['get', 'post', 'delete']
+  },
 
+  '/user/categories': [
+    {
+      methods: ['get'],
+      fn: function (req, res) {
+        res.end('method GET');
+      },
+      restricted: true
+    },
+    {
+      methods: ['post'],
+      fn: function(req, res) {
+        res.end('method POST');
+      },
+      restricted: true
+    }
+  ]
 };

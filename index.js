@@ -88,9 +88,7 @@ proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
       readdir = sync ? readdirSync : fs.readdir;
 
   stat(dirPath, function (err, stats) {
-    if (err) {
-      throw err;
-    }
+    if (err) throw err;
 
     if (stats.isDirectory()) {
       readdir(dirPath, function (err, files) {
@@ -119,8 +117,7 @@ proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
  * @param  {Object} routes
  */
 proto.applyRoutes = function applyRoutes(routes) {
-  var _self = this,
-      action, actionName, methods, route;
+  var _self = this, action, actionName;
 
   for (actionName in routes) {
     if (!routes.hasOwnProperty(actionName)) continue;
