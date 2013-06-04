@@ -7,7 +7,7 @@ var fs           = require('fs'),
 
 /**
  * Function which always return true.
- * @return {Boolean} returned value is always true
+ * @return {Boolean} true
  */
 function returnTrue() { return true; }
 
@@ -53,6 +53,7 @@ function Router(app, dirPath, settings) {
   this.app = app;
   this.dirPath = dirPath;
   this.settings = settings;
+  // @TODO: remove it, not it is used to check if all files have been read
   this.reads = 0;
 
   EventEmitter.call(this);
@@ -89,9 +90,8 @@ function readdirSync(path, fn) {
  */
 proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
   var _self = this,
-      sync = _self.settings.sync;
-
-  var stat = sync ? statSync : fs.stat,
+      sync = _self.settings.sync,
+      stat = sync ? statSync : fs.stat,
       readdir = sync ? readdirSync : fs.readdir;
 
   _self.reads += 1;
@@ -113,11 +113,11 @@ proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
           stat(path.join(dirPath, file), function (err, stats) {
             if (err) throw err;
 
+            _self.reads -= 1;
+
             if (stats.isDirectory()) {
-              _self.reads -= 1;
               _self.readdirWithRoutes(path.resolve(dirPath, file));
             } else if (_self.settings.ext.some(function (ext) { return assertExt(file, ext); })) {
-              _self.reads -= 1;
               _self.applyRoutes(require(path.resolve('./', dirPath, file)));
             }
           });
