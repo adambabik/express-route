@@ -1,7 +1,9 @@
 'use strict';
 
-var fs   = require('fs'),
-    path = require('path');
+var fs           = require('fs'),
+    path         = require('path'),
+    util         = require('util'),
+    EventEmitter = require("events").EventEmitter;
 
 /**
  * Function which always return true.
@@ -51,7 +53,12 @@ function Router(app, dirPath, settings) {
   this.app = app;
   this.dirPath = dirPath;
   this.settings = settings;
+  this.reads = 0;
+
+  EventEmitter.call(this);
 }
+
+util.inherits(Router, EventEmitter);
 
 var proto = Router.prototype;
 
@@ -87,20 +94,30 @@ proto.readdirWithRoutes = function readdirWithRoutes(dirPath) {
   var stat = sync ? statSync : fs.stat,
       readdir = sync ? readdirSync : fs.readdir;
 
+  _self.reads += 1;
+
   stat(dirPath, function (err, stats) {
     if (err) throw err;
 
+    _self.reads -= 1;
+
     if (stats.isDirectory()) {
+      _self.reads += 1;
+
       readdir(dirPath, function (err, files) {
         if (err) throw err;
+
+        _self.reads += files.length - 1;
 
         files.forEach(function (file) {
           stat(path.join(dirPath, file), function (err, stats) {
             if (err) throw err;
 
             if (stats.isDirectory()) {
+              _self.reads -= 1;
               _self.readdirWithRoutes(path.resolve(dirPath, file));
             } else if (_self.settings.ext.some(function (ext) { return assertExt(file, ext); })) {
+              _self.reads -= 1;
               _self.applyRoutes(require(path.resolve('./', dirPath, file)));
             }
           });
@@ -131,6 +148,10 @@ proto.applyRoutes = function applyRoutes(routes) {
     } else {
       _self.applyRoute(actionName, action);
     }
+  }
+
+  if (_self.reads === 0) {
+    this.emit('loaded');
   }
 };
 
@@ -169,7 +190,9 @@ proto.applyRoute = function applyRoute(actionName, action) {
  * @return {Object<Router>}        Router instance
  */
 function route(app, dir, settings) {
-  return new Router(app, dir, settings).readdirWithRoutes(dir);
+  var router = new Router(app, dir, settings);
+  router.readdirWithRoutes(dir);
+  return router;
 }
 route.Router = Router;
 

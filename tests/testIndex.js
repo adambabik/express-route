@@ -196,5 +196,24 @@ describe('route', function () {
         });
       }).end();
     });
+
+    // @TODO: needs more extensive tests
+    it('router should emit loaded event', function(done) {
+      // Loading routes from a directory with one file
+      var router = route(app, routesConfDir, {
+        sync: false,
+        ensureRestriction: function (req, res, next) {
+          if (!user.authorized) {
+            res.status(403).end('Forbidden');
+            return;
+          }
+          next();
+        }
+      });
+
+      router.on('loaded', function() {
+        done();
+      });
+    });
   });
 });

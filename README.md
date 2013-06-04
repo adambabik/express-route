@@ -10,7 +10,7 @@ express-route is a library that let you organize the routes for the express appl
 
 ## Usage
 
-Firstly, you need to define the routes. The route can be an object or an array of objects. They can be in one file or in many files.
+Firstly, you need to define the routes. The route can be a function, an object or an array of objects. They can be in one file or in many files.
 
 The simplest definition may look like this:
 
@@ -28,6 +28,19 @@ This definition is simply translated to the following code:
 app.get('/', function (req, res, next) {
 	res.end('Hello!');
 });
+```
+
+`get` is a default HTTP method. You can change it using an object:
+
+```javascript
+module.exports = {
+	'/home': {
+		methods: ['post'],
+		fn: function (req, res, next) {
+			res.end('Hello!');
+		}
+	}
+};
 ```
 
 To apply the routes to the express application you need to call `route` with valid parameters:
