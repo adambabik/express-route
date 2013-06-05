@@ -30,7 +30,7 @@ app.get('/', function (req, res, next) {
 });
 ```
 
-`get` is a default HTTP method. You can change it using an object:
+`get` is a default HTTP method. You can change it using an object definition:
 
 ```javascript
 module.exports = {
@@ -57,7 +57,7 @@ route(app, './routes', {
 
 	// action to invoke when route is marked as restricted: true
 	ensureRestriction: function (req, res, next) {
-		if (!user.authorized) {
+		if (!user.authorized()) {
 			res.status(403).end('Forbidden');
 			return;
 		}
@@ -120,11 +120,12 @@ module.exports = {
 
 Apply routes to the express application.
 
-* `app` - reference to the express application
-* `path` - path to the folder or the file with the routes
-* `settings` - a configuration object
-	* `sync: Boolean` - whether the load of the routings is synchronous or not
-	* `ensureRestriction: Function` - middleware which check if the request is authenticated
+* `app` - reference to the express application,
+* `path` - path to the folder or the file with the routes,
+* `settings` - a configuration object,
+	* `sync: Boolean` - whether the load of the routings is synchronous or not (optional, `true` by default),
+	* `ensureRestriction: Function` - middleware which check if the request is authenticated (optional, by default it's a function that accepts all requests),
+	* `ext: Array` - array with valid file extensions, e.g. `['.route']` (optional, `['.js']` by default).
 
 
 
