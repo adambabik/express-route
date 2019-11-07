@@ -23,7 +23,7 @@
     "url": "https://github.com/dreame4/express-route.git"
   },
   "devDependencies": {
-    "express": "~3.2.0",
+    "express": "~4.17.1",
     "mocha": "~1.10.0"
   },
   "author": "Adam Babik",
